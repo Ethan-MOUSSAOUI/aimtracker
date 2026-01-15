@@ -439,6 +439,155 @@
             background: linear-gradient(90deg, #4ecdc4, #ff6b6b);
             transition: width 0.1s linear;
         }
+
+        /* Chat System Styles */
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            border: 2px solid #4ecdc4;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            box-shadow: 0 0 30px rgba(76, 201, 196, 0.3);
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border-radius: 13px 13px 0 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+
+        .chat-message .username {
+            color: #4ecdc4;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            border-top: 1px solid rgba(76, 201, 196, 0.3);
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #4ecdc4;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Stats Display */
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+
+        /* Password Input */
+        .password-input {
+            margin: 15px 0;
+        }
+
+        .password-input input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border: 1px solid #4ecdc4;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            margin-top: 10px;
+        }
+
+        /* Reconnection Banner */
+        .reconnection-banner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 165, 0, 0.95);
+            padding: 15px 30px;
+            border-radius: 10px;
+            z-index: 10000;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -510,7 +659,12 @@
                         </select>
                     </div>
                 </div>
-                
+
+                <div class="password-input">
+                    <label>🔒 Mot de passe (optionnel) :</label>
+                    <input type="password" id="room-password-input" placeholder="Laisser vide pour room publique" maxlength="20">
+                </div>
+
                 <button class="btn" onclick="createRoomWithSettings()">Créer la room</button>
             </div>
             
@@ -549,15 +703,34 @@
         <!-- Écran de la room AMÉLIORÉ -->
         <div id="room-screen" class="screen">
             <h1 class="title">🎮 Room: <span id="current-room-name"></span></h1>
-            
+
             <div id="game-mode-display" class="game-mode-indicator" style="display: none;">
                 <!-- Affichage du mode de jeu actuel -->
             </div>
-            
+
             <div id="spectator-indicator" class="spectator-mode" style="display: none;">
                 🍿 Mode Spectateur - Vous regardez la partie
             </div>
-            
+
+            <!-- Stats Panel -->
+            <div id="stats-panel" class="stats-panel" style="display: none;">
+                <h4>📊 Vos Statistiques</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-accuracy">0%</div>
+                        <div class="stat-label">Précision</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-hits">0</div>
+                        <div class="stat-label">Réussis</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-streak">0</div>
+                        <div class="stat-label">Série</div>
+                    </div>
+                </div>
+            </div>
+
             <div id="waiting-area">
                 <h3>En attente des joueurs...</h3>
                 <div id="players-list" style="margin: 20px 0;"></div>
@@ -583,7 +756,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="game-screen">
                     <div id="game-area" class="game-area"></div>
                 </div>
@@ -598,6 +771,23 @@
         </div>
     </div>
 
+    <!-- Chat Container -->
+    <div id="chat-container" class="chat-container hidden">
+        <div class="chat-header">
+            <span>💬 Chat</span>
+            <button class="chat-toggle" onclick="toggleChat()">Fermer</button>
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input-container">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Tapez votre message..." maxlength="200" />
+        </div>
+    </div>
+
+    <!-- Reconnection Banner -->
+    <div id="reconnection-banner" class="reconnection-banner hidden">
+        🔄 Reconnexion en cours...
+    </div>
+
     <!-- Popup de victoire -->
     <div id="winner-popup" class="winner-announcement" style="display: none;">
         <div class="winner-text" id="winner-text">🎉 Victoire !</div>
@@ -608,6 +798,9 @@
     <script>
         // Variables globales
         let socket;
+        let reconnectToken = localStorage.getItem('reconnectToken');
+        let mouseMoveThrottle = null;
+
         let gameState = {
             currentScreen: 'login',
             username: '',
@@ -622,15 +815,64 @@
             spectators: [],
             scores: {},
             playerCursors: {},
-            targetTimers: {} // Pour gérer les barres de vie des cibles
+            targetTimers: {}, // Pour gérer les barres de vie des cibles
+            chatMessages: [],
+            playerStats: null, // Stats du joueur actuel
+            isReconnecting: false
         };
 
         // Initialisation de Socket.io
         function initSocket() {
             socket = io();
             
+            // Gestion de la reconnexion automatique
+            socket.on('connect', () => {
+                if (gameState.isReconnecting && reconnectToken) {
+                    socket.emit('join-lobby', {
+                        username: gameState.username,
+                        reconnectToken: reconnectToken
+                    });
+                }
+            });
+
+            socket.on('reconnected', (data) => {
+                gameState.isReconnecting = false;
+                hideReconnectionBanner();
+
+                gameState.currentRoom = data.roomId;
+                gameState.players = data.players;
+                gameState.spectators = data.spectators;
+                gameState.scores = data.scores;
+                gameState.targets = data.targets;
+                gameState.gameSettings = data.gameSettings;
+
+                showScreen('room-screen');
+                if (data.gameState === 'playing') {
+                    startGameDisplay();
+                }
+
+                showChatNotification('Reconnecté avec succès !');
+            });
+
+            socket.on('player-reconnected', (data) => {
+                showChatNotification(`${data.username} s'est reconnecté`);
+            });
+
+            socket.on('player-disconnected', (data) => {
+                showChatNotification(`${data.username} s'est déconnecté`);
+            });
+
             // Événements du lobby
             socket.on('lobby-joined', (data) => {
+                gameState.isReconnecting = false;
+                hideReconnectionBanner();
+
+                // Stocker le token de reconnexion
+                if (data.reconnectToken) {
+                    reconnectToken = data.reconnectToken;
+                    localStorage.setItem('reconnectToken', reconnectToken);
+                }
+
                 showScreen('lobby-screen');
                 document.getElementById('player-name').textContent = gameState.username;
                 updateRoomsList(data.rooms);
@@ -746,25 +988,36 @@
                     // Effet visuel de frappe avec points
                     const points = data.points > 1 ? ` (+${data.points})` : '';
                     showHitEffect(
-                        target.offsetLeft + target.offsetWidth/2, 
-                        target.offsetTop + target.offsetHeight/2, 
+                        target.offsetLeft + target.offsetWidth/2,
+                        target.offsetTop + target.offsetHeight/2,
                         data.playerName + points,
                         data.points > 1
                     );
                     target.remove();
-                    
+
                     // Nettoyer le timer de la cible
                     clearTargetTimer(data.targetId);
                 }
-                
+
                 // Activer la prochaine cible en mode progressif
                 if (data.nextTarget) {
                     renderNewTarget(data.nextTarget);
                 }
-                
+
                 gameState.scores = data.scores;
                 updateScoreDisplay();
                 document.getElementById('targets-count').textContent = data.remainingTargets;
+
+                // Mettre à jour les stats si c'est notre hit
+                if (data.playerStats && socket && data.playerId === socket.id) {
+                    gameState.playerStats = data.playerStats;
+                    updateStatsDisplay();
+                }
+            });
+
+            // Chat events
+            socket.on('chat-message', (message) => {
+                addChatMessage(message.username, message.message);
             });
 
             socket.on('targets-expired', (data) => {
@@ -848,6 +1101,8 @@
                 return;
             }
 
+            const password = document.getElementById('room-password-input').value.trim();
+
             const gameSettings = {
                 targetCount: parseInt(document.getElementById('target-count-select').value),
                 spawnMode: document.getElementById('spawn-mode-select').value,
@@ -859,7 +1114,8 @@
             socket.emit('create-room-with-settings', {
                 roomId: roomName,
                 username: gameState.username,
-                gameSettings
+                gameSettings,
+                password: password || null
             });
         }
 
@@ -881,7 +1137,7 @@
 
         function updateRoomsList(rooms) {
             const container = document.getElementById('rooms-container');
-            
+
             if (rooms.length === 0) {
                 container.innerHTML = '<p>Aucune room disponible. Créez-en une !</p>';
                 return;
@@ -890,19 +1146,19 @@
             container.innerHTML = rooms.map(room => `
                 <div class="room-card">
                     <div class="room-status status-${room.gameState}">${getStatusText(room.gameState)}</div>
-                    <h3>${room.id}</h3>
-                    <p>Créée par: ${room.creator}</p>
+                    <h3>${room.hasPassword ? '🔒 ' : ''}${escapeHtml(room.id)}</h3>
+                    <p>Créée par: ${escapeHtml(room.creator)}</p>
                     <p>👥 ${room.playerCount}/2 joueurs | 👁️ ${room.spectatorCount} spectateurs</p>
                     ${room.gameSettings ? `
                         <div class="room-settings-info">
-                            🎯 ${room.gameSettings.targetCount} cibles | 
-                            ${getModeDisplayName(room.gameSettings.gameMode)} | 
+                            🎯 ${room.gameSettings.targetCount} cibles |
+                            ${getModeDisplayName(room.gameSettings.gameMode)} |
                             ${getDifficultyDisplayName(room.gameSettings.difficulty)}
                         </div>
                     ` : ''}
                     <div style="margin-top: 15px;">
-                        ${room.playerCount < 2 ? `<button class="btn small" onclick="joinRoom('${room.id}', 'player')">Jouer</button>` : ''}
-                        <button class="btn spectator small" onclick="joinRoom('${room.id}', 'spectator')">Regarder</button>
+                        ${room.playerCount < 2 ? `<button class="btn small" onclick="joinRoom('${escapeHtml(room.id)}', 'player')">Jouer</button>` : ''}
+                        <button class="btn spectator small" onclick="joinRoom('${escapeHtml(room.id)}', 'spectator')">Regarder</button>
                     </div>
                 </div>
             `).join('');
@@ -994,11 +1250,15 @@
         }
 
         function backToLobby() {
+            // Cacher le chat
+            document.getElementById('chat-container').classList.add('hidden');
+            document.getElementById('stats-panel').style.display = 'none';
+
             socket.disconnect();
             showScreen('login-screen');
             document.getElementById('login-btn-text').style.display = 'inline-block';
             document.getElementById('login-loading').style.display = 'none';
-            
+
             // Reset du jeu
             Object.keys(gameState.targetTimers).forEach(clearTargetTimer);
             gameState = {
@@ -1015,7 +1275,10 @@
                 spectators: [],
                 scores: {},
                 playerCursors: {},
-                targetTimers: {}
+                targetTimers: {},
+                chatMessages: [],
+                playerStats: null,
+                isReconnecting: false
             };
         }
 
@@ -1125,18 +1388,23 @@
 
         function setupGameArea() {
             const gameArea = document.getElementById('game-area');
-            
-            // Mouvement de la souris pour les joueurs
+
+            // Mouvement de la souris pour les joueurs (avec throttling)
             if (gameState.role === 'player') {
                 gameArea.addEventListener('mousemove', (e) => {
                     if (gameState.isPlaying) {
                         const rect = gameArea.getBoundingClientRect();
                         const x = e.clientX - rect.left;
                         const y = e.clientY - rect.top;
-                        
-                        socket.emit('mouse-move', { x, y });
+
+                        throttledMouseMove(x, y);
                     }
                 });
+            }
+
+            // Afficher le chat quand on entre dans la room
+            if (gameState.currentScreen === 'room-screen') {
+                document.getElementById('chat-container').classList.remove('hidden');
             }
         }
 
@@ -1209,6 +1477,99 @@
             document.getElementById('winner-popup').style.display = 'none';
         }
 
+        // ========== NOUVELLES FONCTIONS ==========
+
+        // Chat functions
+        function toggleChat() {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.classList.toggle('hidden');
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (message.length > 0 && socket) {
+                socket.emit('send-chat-message', { message });
+                input.value = '';
+            }
+        }
+
+        function addChatMessage(username, message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'chat-message';
+            messageEl.innerHTML = `<span class="username">${escapeHtml(username)}:</span>${escapeHtml(message)}`;
+
+            chatMessages.appendChild(messageEl);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Afficher le chat si caché et on est dans une room
+            if (gameState.currentScreen === 'room-screen') {
+                const chatContainer = document.getElementById('chat-container');
+                if (chatContainer.classList.contains('hidden')) {
+                    // Flash notification
+                    chatContainer.style.border = '2px solid #ff6b6b';
+                    setTimeout(() => {
+                        chatContainer.style.border = '2px solid #4ecdc4';
+                    }, 500);
+                }
+            }
+        }
+
+        function showChatNotification(message) {
+            addChatMessage('Système', message);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Stats functions
+        function updateStatsDisplay() {
+            if (!gameState.playerStats) return;
+
+            document.getElementById('stat-accuracy').textContent = gameState.playerStats.accuracy + '%';
+            document.getElementById('stat-hits').textContent = gameState.playerStats.hits;
+            document.getElementById('stat-streak').textContent = gameState.playerStats.currentStreak;
+
+            // Afficher le panneau de stats
+            if (gameState.role === 'player' && gameState.isPlaying) {
+                document.getElementById('stats-panel').style.display = 'block';
+            }
+        }
+
+        // Reconnection functions
+        function showReconnectionBanner() {
+            document.getElementById('reconnection-banner').classList.remove('hidden');
+        }
+
+        function hideReconnectionBanner() {
+            document.getElementById('reconnection-banner').classList.add('hidden');
+        }
+
+        function attemptReconnection() {
+            if (reconnectToken && gameState.username) {
+                gameState.isReconnecting = true;
+                showReconnectionBanner();
+                initSocket();
+            }
+        }
+
+        // Mouse move throttling
+        function throttledMouseMove(x, y) {
+            if (!mouseMoveThrottle) {
+                socket.emit('mouse-move', { x, y });
+                mouseMoveThrottle = setTimeout(() => {
+                    mouseMoveThrottle = null;
+                }, 33); // ~30fps
+            }
+        }
+
+        // ========== FIN NOUVELLES FONCTIONS ==========
+
         // Gestion du redimensionnement responsive
         window.addEventListener('resize', () => {
             if (gameState.currentScreen === 'room-screen' && gameState.isPlaying) {
@@ -1221,6 +1582,13 @@
 
         // Gestion des touches
         document.addEventListener('keydown', (e) => {
+            // Chat input
+            if (e.target.id === 'chat-input' && e.key === 'Enter') {
+                e.preventDefault();
+                sendChatMessage();
+                return;
+            }
+
             if (e.key === 'Enter') {
                 if (gameState.currentScreen === 'login') {
                     joinLobby();
@@ -1230,7 +1598,7 @@
                     chooseRole('player'); // Par défaut joueur avec Entrée
                 }
             }
-            
+
             if (e.key === 'Escape') {
                 if (gameState.currentScreen === 'room-screen' || gameState.currentScreen === 'role-selection') {
                     backToLobby();
@@ -1241,6 +1609,13 @@
             if (e.key === 's' || e.key === 'S') {
                 if (gameState.currentScreen === 'role-selection') {
                     chooseRole('spectator');
+                }
+            }
+
+            // Toggle chat avec 'c'
+            if (e.key === 'c' || e.key === 'C') {
+                if (gameState.currentScreen === 'room-screen') {
+                    toggleChat();
                 }
             }
         });
