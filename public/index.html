@@ -460,6 +460,9 @@
             box-shadow: 0 0 60px rgba(78, 205, 196, 0.4),
                         inset 0 0 100px rgba(0, 0, 0, 0.5);
             position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
         }
 
         .game-area::before {
@@ -482,6 +485,10 @@
             transition: all 0.2s ease;
             border: 2px solid rgba(255,255,255,0.8);
             box-shadow: 0 0 15px rgba(255,255,255,0.5);
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -webkit-touch-callout: none;
         }
 
         .target:hover {
@@ -896,7 +903,7 @@
             </div>
             
             <button class="btn" onclick="joinLobby()">
-                <span id="login-btn-text">Rejoindre le lobby</span>
+                <span id="login-btn-text">COMMENCER</span>
                 <div id="login-loading" class="loading" style="display: none;"></div>
             </button>
             
@@ -1646,6 +1653,8 @@
             }
             
             targetEl.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (gameState.role === 'player' && gameState.isPlaying) {
                     shootTarget(target.id, e.offsetX + target.x - target.size/2, e.offsetY + target.y - target.size/2);
                 }
